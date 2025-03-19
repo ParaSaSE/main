@@ -40,7 +40,16 @@
                                         <input type="text" id="model" name="model" class="form-control" required style="border-color: #8B8C89;">
                                     </div>
                                 </div>
-
+                                <div class="row g-3 mb-3">
+                                    <div class="col-md-6">
+                                        <label for="type" class="form-label" style="color: #274C77; font-weight: 500;">Type</label>
+                                        <input type="text" id="type" name="type" class="form-control" required style="border-color: #8B8C89;">
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label for="visor" class="form-label" style="color: #274C77; font-weight: 500;">Visor</label>
+                                        <input type="text" id="visor" name="visor" class="form-control" required style="border-color: #8B8C89;">
+                                    </div>
+                                </div>
                                 <div class="row g-3 mb-3">
                                     <div class="col-md-6">
                                         <label for="size" class="form-label" style="color: #274C77; font-weight: 500;">Size</label>
@@ -51,28 +60,25 @@
                                         <input type="text" id="color" name="color" class="form-control" required style="border-color: #8B8C89;">
                                     </div>
                                 </div>
-
                                 <div class="row g-3 mb-3">
-                                    <div class="col-md-6">
-                                        <label for="quantity" class="form-label" style="color: #274C77; font-weight: 500;">Quantity</label>
-                                        <input type="number" id="quantity" name="quantity" class="form-control" value="0" min="0" required style="border-color: #8B8C89;">
-                                    </div>
                                     <div class="col-md-6">
                                         <label for="price" class="form-label" style="color: #274C77; font-weight: 500;">Price</label>
                                         <input type="text" id="price" name="price" class="form-control" required style="border-color: #8B8C89;">
                                     </div>
+                                    <div class="col-md-6">
+                                        <label for="quantity" class="form-label" style="color: #274C77; font-weight: 500;">Quantity</label>
+                                        <input type="number" id="quantity" name="quantity" class="form-control" value="0" min="0" required style="border-color: #8B8C89;">
+                                    </div>
                                 </div>
-                                
-                                <div class="row g-2 justify-content-center">
-                                    <div class="col-12 col-md-6 text-center">
-                                        <button type="button" class="btn mb-3 w-100" onclick="clearFields()" >
+                                <div class="row mb-3">
+                                    <div class="col-12 text-center">
+                                        <button type="button" class="btn clear-fields-btn" onclick="clearFields()" style="background-color: #274C77; color: white; width: 50%;">
                                             <i class="fas fa-eraser me-1"></i> Clear Fields
                                         </button>
                                     </div>
                                 </div>
-                                
                             </form>
-
+                
                             <div class="row g-2">
                                 <div class="col-6">
                                     <button type="button" class="btn w-100" onclick="addItem()" style="background-color: #274C77; color: white;">
@@ -304,6 +310,8 @@
     
     // Variables to store product details
     let productFound = false;
+    let productType = "";
+    let productVisor = "";
     let productSize = "";
     let productColor = "";
     let productPrice = "";
@@ -328,12 +336,16 @@
             productFound = true;
             
             // Get product details
-            productSize = (cells[3]?.textContent || "").trim();
-            productColor = (cells[4]?.textContent || "").trim();
-            productPrice = (cells[5]?.textContent || "").trim();
-            availableStock = parseInt((cells[6]?.textContent || "0").trim());
+            productType = (cells[3]?.textContent || "").trim();
+            productVisor = (cells[4]?.textContent || "").trim();
+            productSize = (cells[5]?.textContent || "").trim();
+            productColor = (cells[6]?.textContent || "").trim();
+            productPrice = (cells[7]?.textContent || "").trim();
+            availableStock = parseInt((cells[8]?.textContent || "0").trim());
             
             console.log("Product details:", { 
+                productType,
+                productVisor,
                 productSize, 
                 productColor, 
                 productPrice, 
@@ -459,21 +471,24 @@
         showToast("Error adding item to table: " + error.message, "danger");
     }
 }
-    function selectRow(row) {
-        if (selectedRow) {
-            selectedRow.classList.remove("table-active");
-        }
-        selectedRow = row;
-        selectedRow.classList.add("table-active");
 
-        // Populate form fields with selected row data - adjusted for hidden PID
-        document.getElementById("brand").value = row.cells[1].innerText;
-        document.getElementById("model").value = row.cells[2].innerText;
-        document.getElementById("size").value = row.cells[3].innerText;
-        document.getElementById("color").value = row.cells[4].innerText;
-        document.getElementById("price").value = row.cells[5].innerText;
-        document.getElementById("quantity").value = row.cells[6].innerText;
+function selectRow(row) {
+    if (selectedRow) {
+        selectedRow.classList.remove("table-active");
     }
+    selectedRow = row;
+    selectedRow.classList.add("table-active");
+
+    // Populate form fields with selected row data
+    document.getElementById("brand").value = row.cells[1].innerText;
+    document.getElementById("model").value = row.cells[2].innerText;
+    document.getElementById("type").value = "";  // May not have this data in the transaction table
+    document.getElementById("visor").value = ""; // May not have this data in the transaction table
+    document.getElementById("size").value = row.cells[3].innerText;  
+    document.getElementById("color").value = row.cells[4].innerText; 
+    document.getElementById("price").value = row.cells[5].innerText; 
+    document.getElementById("quantity").value = row.cells[6].innerText; 
+}
 
     function removeItem() {
         if (selectedRow) {
@@ -599,23 +614,24 @@
         // Update transaction date
         updateTransactionDate();
         
-        // Set up product table click events
-        let table = document.getElementById("productTable");
-        if (table) {
-            table.addEventListener("click", function (e) {
-                let targetRow = e.target.closest("tr");
-                if (!targetRow || targetRow.rowIndex === 0) return;
+    // Set up product table click events
+    let table = document.getElementById("productTable");
+    if (table) {
+    table.addEventListener("click", function (e) {
+        let targetRow = e.target.closest("tr");
+        if (!targetRow || targetRow.rowIndex === 0) return;
 
-                // Adjust indices to account for hidden PID column
-                document.getElementById("brand").value = targetRow.cells[1].textContent;
-                document.getElementById("model").value = targetRow.cells[2].textContent;
-                document.getElementById("size").value = targetRow.cells[3].textContent;
-                document.getElementById("color").value = targetRow.cells[4].textContent;
-                document.getElementById("price").value = targetRow.cells[5].textContent;
-                document.getElementById("quantity").value = 1;
-            });
-        }
-        
+        // Populate all form fields with the selected product data
+        document.getElementById("brand").value = targetRow.cells[1].textContent;
+        document.getElementById("model").value = targetRow.cells[2].textContent;
+        document.getElementById("type").value = targetRow.cells[3].textContent;
+        document.getElementById("visor").value = targetRow.cells[4].textContent;  // Changed from size to visor
+        document.getElementById("size").value = targetRow.cells[5].textContent;   // Changed from color to size
+        document.getElementById("color").value = targetRow.cells[6].textContent;  // Changed from quantity to color
+        document.getElementById("quantity").value = 1;  // Default quantity to 1
+        document.getElementById("price").value = targetRow.cells[7].textContent;  // Price is now in the last field
+    });
+}
         // Add event listener to the Print Receipt button in success modal
         let printBtn = document.getElementById("printReceiptBtn");
         if (printBtn) {
@@ -913,44 +929,49 @@ function showToast(message, type = "success") {
     background: linear-gradient(to right, #d9dde4, #7196b3); /* Subtle gradient */
     }
 
+    .clear-fields-btn {
+        margin: 0 auto;
+        display: block;
+    }
+
     table {
-    box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1); /* Add shadow to tables */
-    border-radius: 8px;
-    overflow: hidden;
-}
+        box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1); /* Add shadow to tables */
+        border-radius: 8px;
+        overflow: hidden;
+    }
 
     .table-active {
         background-color: #f8d7da !important;
     }
 
     th:first-child, td:first-child {
-    display: none;
-}
+        display: none;
+    }
 
     table td, table th {
         padding: 15px 10px; /* Adjust padding */
     }
 
     button {
-    transition: all 0.3s ease-in-out;
-    color: white !important;
-    background-color: #274C77 !important;
-    width: 100%; /* Full width on small screens */
-    max-width: 350px; /* Limit width on larger screens */
-}
+        transition: all 0.3s ease-in-out;
+        color: white !important;
+        background-color: #274C77 !important;
+        width: 100%; /* Full width on small screens */
+        max-width: 350px; /* Limit width on larger screens */
+    }
 
-button:hover {
-    transform: scale(1.05);
-    background-color:  rgb(1, 45, 95) !important; /* Slightly darker hover effect */
-}
+    button:hover {
+        transform: scale(1.05);
+        background-color:  rgb(1, 45, 95) !important; /* Slightly darker hover effect */
+    }
 
-.btn-close:hover{
-    background-color: transparent !important;
-}
+    .btn-close:hover{
+        background-color: transparent !important;
+    }
 
-.table-responsive {
+    .table-responsive {
     overflow-x: auto;
-}
+    }
 
   /* Make tables scrollable */
   .table-container {

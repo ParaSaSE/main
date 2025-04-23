@@ -1,153 +1,47 @@
-<style>
-    .table-container {
-        max-height: 90vh;
-        overflow-y: auto;
-        border: 1px solid #ddd;
-    }
-
-    #productTable {
-        width: 100%;
-        border-collapse: collapse;
-        table-layout: fixed;
-    }
-
-    #productTable thead tr {
-        position: sticky;
-        top: 0;
-        background-color: white;
-        z-index: 2;
-    }
-
-    #productTable th, #productTable td {
-        padding: 8px 12px;
-        text-align: center;
-        border-bottom: 1px solid #ddd;
-        vertical-align: middle;
-        line-height: 1.4;
-    }
-
-    /* Column widths */
-    #productTable th:nth-child(1), #productTable td:nth-child(1) { width: 12%; } /* Brand */
-    #productTable th:nth-child(2), #productTable td:nth-child(2) { 
-        width: 22%; 
-        text-align: left; 
-        white-space: normal; 
-        word-wrap: break-word;
-    } /* Model */
-    #productTable th:nth-child(3), #productTable td:nth-child(3) { width: 8%; } /* Size */
-    #productTable th:nth-child(4), #productTable td:nth-child(4) { width: 10%; } /* Color */
-    #productTable th:nth-child(5), #productTable td:nth-child(5) { width: 12%; } /* Helmet Type */
-    #productTable th:nth-child(6), #productTable td:nth-child(6) { width: 12%; } /* Visor Type */
-    #productTable th:nth-child(7), #productTable td:nth-child(7) { width: 12%; } /* Price */
-    #productTable th:nth-child(8), #productTable td:nth-child(8) { width: 12%; } /* Quantity */
-
-    #productTable tbody tr:nth-child(even) {
-        background-color: #f9f9f9;
-    }
-
-    #productTable tbody tr:hover {
-        background-color: #e9e9e9;
-    }
-</style>
-
-<div class="table-container">
-    <table id="productTable">
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Helmet List</title>
+    <style>
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+    </style>
+</head>
+<body>
+    <table id="{{ table_id }}" class="table table-hover mb-0">
         <thead>
             <tr>
                 <th>Brand</th>
                 <th>Model</th>
                 <th>Size</th>
                 <th>Color</th>
-                <th>Helmet Type</th>
-                <th>Visor Type</th>
                 <th>Price</th>
                 <th>Quantity</th>
+                <th>Helmet Type</th>
+                <th>Visor Type</th>
             </tr>
         </thead>
         <tbody>
-            <!-- Data will be loaded dynamically -->
+            {% for helmet in helmets %}
+            <tr>
+                <td>{{ helmet.brand }}</td>
+                <td>{{ helmet.model }}</td>
+                <td>{{ helmet.size }}</td>
+                <td>{{ helmet.color }}</td>
+                <td>{{ helmet.price }}</td>
+                <td>{{ helmet.quantity }}</td>
+                <td>{{ helmet.helmet_type }}</td>
+                <td>{{ helmet.visor_type }}</td>
+            </tr>
+            {% endfor %}
         </tbody>
     </table>
-</div>
+</body>
+</html>
 
-<script>
-function loadProducts() {
-    fetch("/get-products/")
-    .then(response => response.json())
-    .then(data => {
-        let tableBody = document.querySelector("#productTable tbody");
-        tableBody.innerHTML = "";
 
-        data.forEach(item => {
-            let row = `<tr 
-                data-brand="${item.brand.toLowerCase()}"
-                data-model="${item.model.toLowerCase()}"
-                data-color="${item.color ? item.color.toLowerCase() : ''}"
-                data-size="${item.size.toLowerCase()}"
-                data-type="${item.helmet_type.toLowerCase()}"
-                data-visor="${item.visor_type.toLowerCase()}"
-                data-price="${item.price || 0}"
-                data-in-stock="${item.quantity > 0}">
-                <td>${item.brand}</td>
-                <td>${item.model}</td>
-                <td>${item.size}</td>
-                <td>${item.color || "N/A"}</td>
-                <td>${item.helmet_type}</td>
-                <td>${item.visor_type}</td>
-                <td>₱${item.price?.toLocaleString() || "N/A"}</td>
-                <td class="quantity">${item.quantity}</td>
-            </tr>`;
-            tableBody.innerHTML += row;
-        });
 
-        highlightLowQuantity();
-    })
-    .catch(error => console.error("Error loading products:", error));
-}
-
-function applyFilters() {
-    const brandModelInput = document.getElementById("brand").value.toLowerCase();
-    const rows = document.querySelectorAll("#productTable tbody tr");
-
-    rows.forEach(row => {
-        const brand = row.getAttribute("data-brand");
-        const model = row.getAttribute("data-model");
-        const matchesBrand = brand.includes(brandModelInput);
-        const matchesModel = model.includes(brandModelInput);
-        
-        // Show row if either brand or model matches
-        if (brandModelInput === "" || matchesBrand || matchesModel) {
-            row.style.display = "";
-        } else {
-            row.style.display = "none";
-        }
-    });
-}
-
-function highlightLowQuantity() {
-    document.querySelectorAll("#productTable .quantity").forEach(cell => {
-        const quantity = parseInt(cell.textContent);
-        if (quantity === 0) {
-            cell.style.color = "red";
-            cell.style.fontWeight = "bold";
-        } else if (quantity <= 5) {
-            cell.style.color = "orange";
-            cell.style.fontWeight = "bold";
-        } else {
-            cell.style.color = "black";
-            cell.style.fontWeight = "normal";
-        }
-    });
-}
-
-// Initialize and set up event listeners
-window.addEventListener('DOMContentLoaded', () => {
-    loadProducts();
-    
-    // Ensure the brand input triggers filtering
-    const brandInput = document.getElementById("brand");
-    if (brandInput) {
-        brandInput.addEventListener("input", applyFilters);
-    }
-});
-</script>

@@ -247,7 +247,7 @@
             "color": "Glossy Black",
             "helmet_type": "Half-Face",
             "visor_type": "Double",
-            "quantity": 0,
+            "quantity": 5,
             "price": 1499.0
         },
         {
@@ -526,7 +526,7 @@
             "username": "admin",
             "password": "admin",
             "role": "admin",
-            "lastLogin": "2025-04-22 09:00:00",
+            "lastLogin": "2025-04-23 11:28:30",
             "status": "Active"
         },
         {
@@ -819,6 +819,39 @@
             "quantity": 1,
             "price": 3100,
             "date": "2025-04-22"
+        },
+        {
+            "type": "Restock",
+            "brand": "EVO",
+            "model": "GT RPO ARCHANGEL",
+            "color": "Black-Gray",
+            "helmet_type": "Full-Face",
+            "visor_type": "Single",
+            "quantity": 1,
+            "price": 4500,
+            "date": "2025-04-23"
+        },
+        {
+            "type": "Restock",
+            "brand": "HNJ",
+            "model": "-",
+            "color": "Glossy Black",
+            "helmet_type": "Half-Face",
+            "visor_type": "Double",
+            "quantity": 5,
+            "price": 1499,
+            "date": "2025-04-23"
+        },
+        {
+            "type": "Transaction",
+            "brand": "EVO",
+            "model": "GT RPO ARCHANGEL",
+            "color": "Black-Gray",
+            "helmet_type": "Full-Face",
+            "visor_type": "Single",
+            "quantity": 1,
+            "price": 4500,
+            "date": "2025-04-23"
         }
     ]
 }

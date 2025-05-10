@@ -27,7 +27,7 @@
             "color": "Black-Gray",
             "helmet_type": "Full-Face",
             "visor_type": "Single",
-            "quantity": 6,
+            "quantity": 5,
             "price": 4500.0
         },
         {
@@ -529,7 +529,9 @@
             "visor_type": "Single",
             "price": 750,
             "quantity": 5
-        },
+        }
+    ],
+    "accessories": [
         {
             "brand": "HNJ",
             "model": "TOP BOX",
@@ -656,7 +658,7 @@
             "username": "admin",
             "password": "admin",
             "role": "admin",
-            "lastLogin": "2025-05-07 15:27:12",
+            "lastLogin": "2025-05-10 13:06:40",
             "status": "Active"
         },
         {
@@ -1394,6 +1396,18 @@
             "quantity": 100,
             "price": 3100,
             "date": "2025-05-07"
+        },
+        {
+            "type": "Transaction",
+            "TransactionId": "TRX-25051001",
+            "brand": "EVO",
+            "model": "GT RPO ARCHANGEL",
+            "color": "Black-Gray",
+            "helmet_type": "Full-Face",
+            "visor_type": "Single",
+            "quantity": 1,
+            "price": 4500,
+            "date": "2025-05-10"
         }
     ]
 }

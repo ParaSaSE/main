@@ -410,14 +410,25 @@ def login_view(request):
 def get_products(request):
     try:
         if not os.path.exists(DATA_FILE):
-            return JsonResponse({"helmets": []}, safe=False)  # Return empty list if file does not exist
-        
+            return JsonResponse([], safe=False)
+
         with open(DATA_FILE, "r") as file:
             data = json.load(file)
 
-        return JsonResponse(data.get("helmets", []), safe=False)  # ✅ Return only the helmets list
+        helmets = data.get("helmets", [])
+        accessories = data.get("accessories", [])
+
+        # Add 'category' explicitly to each item
+        for item in helmets:
+            item["category"] = item.get("category", "helmet")
+        for item in accessories:
+            item["category"] = item.get("category", "accessory")
+
+        combined = helmets + accessories
+        return JsonResponse(combined, safe=False)
     except Exception as e:
         return JsonResponse({"error": str(e)}, status=500)
+
 
 def update_product(request):
     if request.method == "POST":

@@ -1001,5 +1001,22 @@
             "price": 3100,
             "date": "2025-05-07"
         }
+    },
+    {
+        "id": 60,
+        "timestamp": "2025-05-10T12:58:37.603097",
+        "type": "Transaction",
+        "details": {
+            "type": "Transaction",
+            "TransactionId": "TRX-25051001",
+            "brand": "EVO",
+            "model": "GT RPO ARCHANGEL",
+            "color": "Black-Gray",
+            "helmet_type": "Full-Face",
+            "visor_type": "Single",
+            "quantity": 1,
+            "price": 4500,
+            "date": "2025-05-10"
+        }
     }
 ]

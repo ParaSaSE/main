@@ -658,7 +658,7 @@
             "username": "admin",
             "password": "admin",
             "role": "admin",
-            "lastLogin": "2025-05-10 13:06:40",
+            "lastLogin": "2025-05-10 22:33:05",
             "status": "Active"
         },
         {
@@ -666,7 +666,7 @@
             "password": "cash",
             "role": "user",
             "status": "Active",
-            "lastLogin": "2025-04-08 14:57:14"
+            "lastLogin": "2025-05-10 22:01:21"
         },
         {
             "username": "cashier2",

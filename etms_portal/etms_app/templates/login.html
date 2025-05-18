@@ -1,3 +1,4 @@
+{% load static %}
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -5,8 +6,8 @@
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>ElytraTech: Login Here</title>
-  <link href="https://cdn.lineicons.com/4.0/lineicons.css" rel="stylesheet" />
-  {% load static %}
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@700&display=swap" rel="stylesheet">
+  <link rel="icon" type="image/png" href="{% static 'headline-logo.png' %}">
   <link rel="stylesheet" href="{% static 'etms_app/style.css' %}">
 </head>
 <body>
@@ -30,15 +31,15 @@
       <form method="POST" action="{% url 'login' %}" style="display: flex; flex-direction: column; align-items: center;">
         {% csrf_token %}
         
-        <h1>Login Here</h1>
-        <img src="{% static 'headline-logo.png' %}" alt="icon" height="50" style="margin-bottom: 10px;">
+<div style="display: flex; align-items: center; justify-content: center; gap: 18px; margin-bottom: 24px; min-height: 70px; margin-left: 5px;">
+    <div class="login-logo-circle">
+        <img src="{% static 'headline-logo.png' %}" alt="icon" height="50" width="50" style="display: block;">
+    </div>
+    <h1 class="login-title">Login</h1>
+</div>
 
-        <p style="margin-bottom: 20px; color: #666;">
-          Authorized personnel only. Please log in with your assigned credentials.
-        </p>
-
-        <!-- Unified and properly handled message box -->
-        <div class="message-box {% if messages or error %}show{% endif %}">
+<!-- Unified and properly handled message box -->
+        <div class="message-box{% if messages or error %} show{% endif %}">
           {% if messages %}
             {% for message in messages %}
               <p class="error-msg">{{ message }}</p>
@@ -48,12 +49,22 @@
           {% endif %}
         </div>
 
-        <input type="text" name="employee_name" placeholder="Name" required>
-        <input type="password" name="password" placeholder="Password" required>
+        <label for="id_employee_name" style="align-self: flex-start; margin-left: 8px; margin-bottom: 2px; color:rgb(53, 53, 53); font-size: 15px; font-weight: 500;">Username</label>
+        <input id="id_employee_name" type="text" name="employee_name" placeholder="Enter Username" required class="login-input">
 
-        <button type="submit">Login</button>
+        <label for="id_password" style="align-self: flex-start; margin-left: 8px; margin-bottom: 2px; color:rgb(53, 53, 53); font-size: 15px; font-weight: 500;">Password</label>
+        <div style="position: relative; width: 100%;">
+          <input id="id_password" type="password" name="password" placeholder="Enter Password" required class="login-input" style="width: 100%; padding-right: 38px;">
+          <button type="button" class="show-hide-password-button" aria-controls="password"
+        style="width:24px; height:24px; position:absolute; right:8px; top:22%; transform:translateY(-50%); display:flex; align-items:center; justify-content:center; padding:0; background:none; border:none;">
+          <img src="{% static 'view.png' %}" id="eyeIconShow" alt="Show" style="width:20px; height:20px; display: block; opacity:0.5;">
+          <img src="{% static 'hide.png' %}" id="eyeIconHide" alt="Hide" style="width:20px; height:20px; display: none; opacity:0.5;">
+        </button>
+        </div>
 
-        <p style="font-size: 12px; color: #aaa; margin-top: 15px;">
+        <button type="submit" style="display: flex; align-items: center; gap: 10px; margin-top: 25px;">Login</button>
+
+        <p style="font-size: 12px; color: #aaa; margin-top: 15px; text-shadow: none;">
           ElytraTech Management System v1.0
         </p>
       </form>
@@ -80,7 +91,43 @@
 
   </div>
 
-  <script src="{% static 'etms_app/script.js' %}"></script>
+  <script>
+
+const registerButton = document.getElementById("register");
+const loginButton = document.getElementById("login");
+const container = document.getElementById("container");
+
+registerButton.addEventListener("click", () => {
+  container.classList.add("right-panel-active");
+});
+
+loginButton.addEventListener("click", () => {
+  container.classList.remove("right-panel-active");
+});
+
+document.addEventListener('DOMContentLoaded', function() {
+  const passwordInput = document.getElementById('id_password');
+  const togglePasswordBtn = document.querySelector('.show-hide-password-button');
+  const eyeIconShow = document.getElementById('eyeIconShow');
+  const eyeIconHide = document.getElementById('eyeIconHide');
+
+  if (togglePasswordBtn) {
+    togglePasswordBtn.addEventListener('click', function(e) {
+      e.preventDefault();
+      if (passwordInput.type === 'password') {
+        passwordInput.type = 'text';
+        eyeIconShow.style.display = 'none';
+        eyeIconHide.style.display = 'block';
+      } else {
+        passwordInput.type = 'password';
+        eyeIconShow.style.display = 'block';
+        eyeIconHide.style.display = 'none';
+      }
+    });
+  }
+});
+
+  </script>
 
 <style>
   body {
@@ -88,31 +135,60 @@
   }
 
   .login-container h1 {
-    margin-top: 30px; /* Add space from the top */
-    margin-bottom: 10px;
+    margin: 0;
+    font-size: 2.2rem;
+    font-weight: 700;
+    letter-spacing: 1px;
+    line-height: 1;
   }
 
   .login-container form {
-    padding-top: 30px; /* Push content downward */
+    padding-top: 20px; /* Push content downward */
   }
 
-  .message-box {
-    height: 24px;
-    margin-bottom: 10px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    visibility: hidden; /* Hide but preserve space */
-  }
+  .login-title {
+  font-family: 'Poppins', 'Segoe UI', Arial, sans-serif;
+  margin: 0;
+  font-size: 2.2rem;
+  font-weight: 700;
+  letter-spacing: 1px;
+  line-height: 1;
+}
 
-  .message-box.show {
-    visibility: visible;
-  }
+/* CSS: Update these styles */
+.message-box {
+  margin-bottom: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  visibility: hidden;
+  opacity: 0;
+  transition: opacity 0.7s ease, margin-bottom 0.3s;
+  min-height: 0;
+  height: auto;
+}
+
+.message-box.show {
+  visibility: visible;
+  opacity: 1;
+  margin-bottom: 12px; /* Only adds space when visible */
+}
+
+.login-input {
+  transition: margin-top 0.3s;
+  margin-top: 0;
+}
+
+/* Optional: If you want to animate the input fields down when error is shown */
+.message-box.show + .login-input {
+  margin-top: 12px;
+}
 
   .error-msg {
     color: red;
     font-size: 14px;
     margin: 0;
+    text-shadow: none;
   }
 
 </style>

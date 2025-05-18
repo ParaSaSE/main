@@ -1018,5 +1018,40 @@
             "price": 4500,
             "date": "2025-05-10"
         }
+    },
+    {
+        "id": 61,
+        "timestamp": "2025-05-18T23:19:59.025550",
+        "type": "Restock",
+        "details": {
+            "type": "Restock",
+            "RestockId": "RSK-25051801",
+            "brand": "EVO",
+            "model": "GT RPO ARCHANGEL",
+            "color": "Black-Gray",
+            "helmet_type": "Full-Face",
+            "visor_type": "Single",
+            "quantity": 500,
+            "price": 4500,
+            "date": "2025-05-18"
+        }
+    },
+    {
+        "id": 62,
+        "timestamp": "2025-05-18T23:20:21.211696",
+        "type": "Transaction",
+        "details": {
+            "type": "Transaction",
+            "TransactionId": "TRX-25051801",
+            "category": "Helmet",
+            "brand": "EVO",
+            "model": "GT RPO ARCHANGEL",
+            "color": "Black-Gray",
+            "helmet_type": "Full-Face",
+            "visor_type": "Single",
+            "quantity": 500,
+            "price": 4500,
+            "date": "2025-05-18"
+        }
     }
 ]

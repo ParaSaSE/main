@@ -5,6 +5,7 @@
 {% block main_contents %}
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.7.1/chart.min.js"></script>
 
+
 <style>
 body {
     background: linear-gradient(to right, #d9dde4, #7196b3);
@@ -237,8 +238,8 @@ body {
         .then(data => {
             // Process data for graphs
             const monthlySalesData = getMonthlySalesData(data.logs);
-            const productDistributionData = getProductDistributionData(data.helmets);
-            const stockLevelsData = getStockLevelsData(data.helmets);
+            const productDistributionData = getProductDistributionData(data.helmets, data.accessories);
+            const stockLevelsData = getStockLevelsData(data.helmets, data.accessories);
 
             // Update graphs
             updateMonthlySalesChart(monthlySalesData);
@@ -269,29 +270,47 @@ function getMonthlySalesData(logs) {
     return Object.entries(monthlySales).map(([month, total]) => ({ month, total }));
 }
 
-// Helper function to process product distribution data
-function getProductDistributionData(helmets) {
+// Helper function to process product distribution data (helmets + accessories)
+function getProductDistributionData(helmets, accessories) {
     const productDistribution = {};
 
-    helmets.forEach(helmet => {
-        if (!productDistribution[helmet.brand]) {
-            productDistribution[helmet.brand] = 0;
+    // Count helmets
+    helmets.forEach(item => {
+        if (!productDistribution[item.brand]) {
+            productDistribution[item.brand] = 0;
         }
-        productDistribution[helmet.brand] += helmet.quantity;
+        productDistribution[item.brand] += item.quantity;
+    });
+
+    // Count accessories
+    (accessories || []).forEach(item => {
+        if (!productDistribution[item.brand]) {
+            productDistribution[item.brand] = 0;
+        }
+        productDistribution[item.brand] += item.quantity;
     });
 
     return Object.entries(productDistribution).map(([brand, quantity]) => ({ brand, quantity }));
 }
 
-// Helper function to process stock levels data
-function getStockLevelsData(helmets) {
+// Helper function to process stock levels data (helmets + accessories)
+function getStockLevelsData(helmets, accessories) {
     const stockLevels = {};
 
-    helmets.forEach(helmet => {
-        if (!stockLevels[helmet.brand]) {
-            stockLevels[helmet.brand] = 0;
+    // Count helmets
+    helmets.forEach(item => {
+        if (!stockLevels[item.brand]) {
+            stockLevels[item.brand] = 0;
         }
-        stockLevels[helmet.brand] += helmet.quantity;
+        stockLevels[item.brand] += item.quantity;
+    });
+
+    // Count accessories
+    (accessories || []).forEach(item => {
+        if (!stockLevels[item.brand]) {
+            stockLevels[item.brand] = 0;
+        }
+        stockLevels[item.brand] += item.quantity;
     });
 
     return Object.entries(stockLevels).map(([brand, quantity]) => ({ brand, quantity }));
@@ -399,7 +418,7 @@ function updateStockLevelsChart(data) {
 }
 
     function fetchTopSellingBrand() {
-    fetch('/static/data.json') // Adjust the path if necessary
+    fetch('/static/data.json')
         .then(response => {
             if (!response.ok) {
                 throw new Error('Failed to fetch data.json');
@@ -428,15 +447,19 @@ function updateStockLevelsChart(data) {
             // Update the DOM
             const brandElement = document.getElementById('top-brand');
             if (topBrand[0]) {
-                brandElement.textContent = `${topBrand[0]} (${topBrand[1]} sold)`;
+                brandElement.innerHTML = `
+                    <span style="font-size: 22px; color: #333; font-weight: bold;">${topBrand[0]}</span>
+                    <br>
+                    <span style="font-size: 15px; color: #666;">${topBrand[1]} sold</span>
+                `;
             } else {
-                brandElement.textContent = 'No data';
+                brandElement.innerHTML = `<span style="font-size: 15px; color: #666;">No data</span>`;
             }
         })
         .catch(error => {
             console.error('Error fetching top-selling brand:', error);
             const brandElement = document.getElementById('top-brand');
-            brandElement.textContent = 'Error';
+            brandElement.innerHTML = `<span style="font-size: 15px; color: #666;">Error</span>`;
         });
 }
 
@@ -481,37 +504,6 @@ function fetchDashboardData() {
         .catch(error => {
             console.error('Error fetching today\'s sales:', error);
             document.getElementById('today-sales').textContent = '₱0.00';
-        });
-
-    // Fetch top selling brand
-    fetch('/api/get_top_selling_brand/')  // JSON-based endpoint
-        .then(response => response.json())
-        .then(data => {
-            document.getElementById('top-brand').textContent = data.top_brand || 'N/A';
-        })
-        .catch(error => {
-            console.error('Error fetching top selling brand:', error);
-            document.getElementById('top-brand').textContent = 'N/A';
-        });
-
-    // Fetch top accessory
-    fetch('/api/get_top_accessory/')  // JSON-based endpoint
-        .then(response => response.json())
-        .then(data => {
-            const accessoryElement = document.getElementById('top-accessory');
-            const countElement = document.getElementById('accessory-sales-count');
-
-            if (data.top_accessory) {
-                accessoryElement.textContent = data.top_accessory.name;
-                countElement.textContent = `${data.top_accessory.count} sold`;
-            } else {
-                accessoryElement.textContent = 'No data';
-                countElement.textContent = '';
-            }
-        })
-        .catch(error => {
-            console.error('Error fetching top accessory:', error);
-            document.getElementById('top-accessory').textContent = 'Error';
         });
 
     // Fetch helmets sold today
@@ -596,7 +588,7 @@ document.addEventListener('DOMContentLoaded', function () {
 });
 
 function fetchTopSellingAccessory() {
-    fetch('/static/data.json') // Adjust the path if necessary
+    fetch('/static/data.json')
         .then(response => {
             if (!response.ok) {
                 throw new Error('Failed to fetch data.json');
@@ -604,61 +596,63 @@ function fetchTopSellingAccessory() {
             return response.json();
         })
         .then(data => {
-            // Filter accessories with helmet_type and visor_type as "NA"
-            const accessories = data.helmets.filter(item => item.helmet_type === "NA" && item.visor_type === "NA");
+            const accessories = data.accessories || [];
+            const transactionLogs = (data.logs || []).filter(
+                log => log.type === "Transaction" && log.helmet_type === "NA" && log.visor_type === "NA"
+            );
 
-            // Check if there are any accessories
-            if (accessories.length === 0) {
-                console.warn('No accessories found with helmet_type and visor_type as "NA".');
-                updateAccessoryDOM('No data');
-                return;
-            }
-
-            // Filter transaction logs for "Transaction" type
-            const transactionLogs = data.logs.filter(log => log.type === "Transaction");
-
-            // Calculate total sales for each accessory
             const accessorySales = {};
             transactionLogs.forEach(log => {
                 const accessory = accessories.find(item => item.brand === log.brand && item.model === log.model);
                 if (accessory) {
-                    if (!accessorySales[accessory.model]) {
-                        accessorySales[accessory.model] = {
-                            name: accessory.model,
-                            brand: accessory.brand
+                    const key = `${accessory.brand}|${accessory.model}`;
+                    if (!accessorySales[key]) {
+                        accessorySales[key] = {
+                            brand: accessory.brand,
+                            model: accessory.model,
+                            totalSold: 0
                         };
                     }
+                    accessorySales[key].totalSold += log.quantity || 0;
                 }
             });
 
-            // Find the top-selling accessory
-            const topAccessory = Object.values(accessorySales)[0]; // Get the first accessory (or modify logic if needed)
+            const topAccessory = Object.values(accessorySales).reduce((top, current) => {
+                return (current.totalSold > (top.totalSold || 0)) ? current : top;
+            }, {});
 
             // Update the DOM
-            if (topAccessory && topAccessory.name) {
-                updateAccessoryDOM(`${topAccessory.brand} ${topAccessory.name}`);
+            const accessoryElement = document.getElementById('top-accessory');
+            const accessorySalesCount = document.getElementById('accessory-sales-count');
+            if (topAccessory && topAccessory.brand && topAccessory.model && topAccessory.totalSold > 0) {
+                accessoryElement.innerHTML = `<span style="font-size: 18px; color: #333; font-weight: bold;">${topAccessory.brand}</span><br><span style="font-size: 18px; color: #333; font-weight: bold;">${topAccessory.model}</span>`;
+                if (accessorySalesCount) {
+                    accessorySalesCount.textContent = `${topAccessory.totalSold} sold`;
+                }
             } else {
-                updateAccessoryDOM('No data');
+                accessoryElement.innerHTML = `<span style="font-size: 15px; color: #666;">No data</span>`;
+                if (accessorySalesCount) {
+                    accessorySalesCount.textContent = '';
+                }
             }
         })
         .catch(error => {
             console.error('Error fetching top-selling accessory:', error);
-            updateAccessoryDOM('No data'); // Display "No data" if an error occurs
+            const accessoryElement = document.getElementById('top-accessory');
+            const accessorySalesCount = document.getElementById('accessory-sales-count');
+            if (accessoryElement) {
+                accessoryElement.innerHTML = `<span style="font-size: 15px; color: #666;">Error</span>`;
+            }
+            if (accessorySalesCount) {
+                accessorySalesCount.textContent = '';
+            }
         });
-}
-
-// Helper function to update the DOM
-function updateAccessoryDOM(name) {
-    const accessoryElement = document.getElementById('top-accessory');
-    if (accessoryElement) accessoryElement.textContent = name;
 }
 
 // Call the function when the page loads
 document.addEventListener('DOMContentLoaded', function () {
     fetchTopSellingAccessory();
-
-    // Refresh the top-selling accessory every 10 seconds
-    setInterval(fetchTopSellingAccessory, 10000); // Updates every 10 seconds
+    setInterval(fetchTopSellingAccessory, 60000); // Updates every 10 seconds
 });
     </script>
 

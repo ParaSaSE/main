@@ -179,8 +179,8 @@ def generate_restock_id():
     # Format with leading zero for counter
     return f"RSK-{date_part}{counter:02d}"
 
-@admin_required
 @csrf_exempt
+@admin_required
 def restock(request):
     if request.method == "POST":
         try:
@@ -195,13 +195,15 @@ def restock(request):
 
             if not os.path.exists(DATA_FILE):
                 with open(DATA_FILE, "w") as file:
-                    json.dump({"helmets": [], "logs": []}, file)
+                    json.dump({"helmets": [], "accessories": [], "logs": []}, file)
 
             with open(DATA_FILE, "r") as file:
                 data = json.load(file)
 
             if "helmets" not in data:
                 data["helmets"] = []
+            if "accessories" not in data:
+                data["accessories"] = []
             if "logs" not in data:
                 data["logs"] = []
 
@@ -209,22 +211,40 @@ def restock(request):
             print("✅ Generated Restock ID:", restock_id)
 
             for new_item in new_items:
-                matching_product = next((
-                    helmet for helmet in data["helmets"]
-                    if (
-                        helmet["brand"] == new_item["brand"]
-                        and helmet["model"] == new_item["model"]
-                        and helmet["size"] == new_item["size"]
-                        and helmet["color"] == new_item["color"]
-                        and helmet["helmet_type"] == new_item["helmet_type"]
-                        and helmet["visor_type"] == new_item["visor_type"]
-                    )
-                ), None)
+                is_accessory = (
+                    new_item.get("helmet_type") == "NA" and
+                    new_item.get("visor_type") == "NA"
+                )
 
-                if matching_product:
-                    matching_product["quantity"] += new_item["quantity"]
+                if is_accessory:
+                    # 🔍 Check accessories
+                    matching_product = next((acc for acc in data["accessories"] if
+                        acc["brand"] == new_item["brand"] and
+                        acc["model"] == new_item["model"] and
+                        acc["size"] == new_item["size"] and
+                        acc["color"] == new_item["color"]
+                    ), None)
+
+                    if matching_product:
+                        matching_product["quantity"] += new_item["quantity"]
+                    else:
+                        data["accessories"].append(new_item)
+
                 else:
-                    data["helmets"].append(new_item)
+                    # 🔍 Check helmets
+                    matching_product = next((helmet for helmet in data["helmets"] if
+                        helmet["brand"] == new_item["brand"] and
+                        helmet["model"] == new_item["model"] and
+                        helmet["size"] == new_item["size"] and
+                        helmet["color"] == new_item["color"] and
+                        helmet["helmet_type"] == new_item["helmet_type"] and
+                        helmet["visor_type"] == new_item["visor_type"]
+                    ), None)
+
+                    if matching_product:
+                        matching_product["quantity"] += new_item["quantity"]
+                    else:
+                        data["helmets"].append(new_item)
 
                 log_entry = {
                     "type": "Restock",
@@ -232,8 +252,8 @@ def restock(request):
                     "brand": new_item["brand"],
                     "model": new_item["model"],
                     "color": new_item["color"],
-                    "helmet_type": new_item["helmet_type"],
-                    "visor_type": new_item["visor_type"],
+                    "helmet_type": new_item.get("helmet_type", "N/A"),
+                    "visor_type": new_item.get("visor_type", "N/A"),
                     "quantity": new_item["quantity"],
                     "price": new_item.get("price", "N/A"),
                     "date": datetime.now().strftime("%Y-%m-%d")
@@ -250,7 +270,6 @@ def restock(request):
                 "message": "Products restocked successfully!",
                 "RestockId": restock_id
             })
-        
 
         except Exception as e:
             return JsonResponse({"error": str(e)}, status=500)
@@ -260,8 +279,6 @@ def restock(request):
         return render(request, "restock.html", context={"current_tab": "restock", "user_role": user_role})
 
     return JsonResponse({"error": "Invalid request"}, status=400)
-
-
 
 
 @user_required
@@ -278,44 +295,84 @@ def process_transaction(request):
             transaction = json.loads(request.body)
             items = transaction["items"]
 
-            # ✅ Generate transaction ID once for all items
             transaction_id = generate_transaction_id()
             print("✅ Generated Transaction ID:", transaction_id)
 
             for transaction_item in items:
-                for helmet in data["helmets"]:
-                    if (
-                        helmet["brand"] == transaction_item["brand"]
-                        and helmet["model"] == transaction_item["model"]
-                        and helmet["size"] == transaction_item["size"]
-                        and helmet["color"] == transaction_item["color"]
-                        and helmet["helmet_type"] == transaction_item["helmet_type"]
-                        and helmet["visor_type"] == transaction_item["visor_type"]
-                    ):
-                        if helmet["quantity"] >= transaction_item["quantity"]:
-                            helmet["quantity"] -= transaction_item["quantity"]
+                found = False  # Track if item was found in either list
 
-                            log_entry = {
-                                "type": "Transaction",
-                                "TransactionId": transaction_id,
-                                "brand": transaction_item["brand"],
-                                "model": transaction_item["model"],
-                                "color": transaction_item["color"],
-                                "helmet_type": transaction_item["helmet_type"],
-                                "visor_type": transaction_item["visor_type"],
-                                "quantity": transaction_item["quantity"],
-                                "price": transaction_item.get("price", "N/A"),
-                                "date": datetime.now().strftime("%Y-%m-%d")
-                            }
+                # Check helmets only if helmet_type is not "NA"
+                if transaction_item.get("helmet_type") != "NA":
+                    for helmet in data.get("helmets", []):
+                        if (
+                            helmet["brand"] == transaction_item["brand"]
+                            and helmet["model"] == transaction_item["model"]
+                            and helmet["size"] == transaction_item.get("size")
+                            and helmet["color"] == transaction_item["color"]
+                            and helmet["helmet_type"] == transaction_item.get("helmet_type")
+                            and helmet["visor_type"] == transaction_item.get("visor_type")
+                        ):
+                            if helmet["quantity"] >= transaction_item["quantity"]:
+                                helmet["quantity"] -= transaction_item["quantity"]
+                                found = True
+                                log_entry = {
+                                    "type": "Transaction",
+                                    "TransactionId": transaction_id,
+                                    "category": "Helmet",
+                                    "brand": transaction_item["brand"],
+                                    "model": transaction_item["model"],
+                                    "color": transaction_item["color"],
+                                    "helmet_type": transaction_item.get("helmet_type", "N/A"),
+                                    "visor_type": transaction_item.get("visor_type", "N/A"),
+                                    "quantity": transaction_item["quantity"],
+                                    "price": transaction_item.get("price", "N/A"),
+                                    "date": datetime.now().strftime("%Y-%m-%d")
+                                }
+                                data["logs"].append(log_entry)
+                                create_log_entry("Transaction", log_entry)
+                                break
+                            else:
+                                return JsonResponse({
+                                    "success": False,
+                                    "message": f"Not enough stock for {transaction_item['brand']} {transaction_item['model']}!"
+                                })
 
-                            # ✅ Log to data.json and logs.json
-                            data["logs"].append(log_entry)
-                            create_log_entry("Transaction", log_entry)
-                        else:
-                            return JsonResponse({
-                                "success": False,
-                                "message": f"Not enough stock for {transaction_item['brand']} {transaction_item['model']}!"
-                            })
+                # Then check accessories if not found in helmets
+                if not found:
+                    for accessory in data.get("accessories", []):
+                        if (
+                            accessory["brand"] == transaction_item["brand"]
+                            and accessory["model"] == transaction_item["model"]
+                            and accessory["color"] == transaction_item["color"]
+                        ):
+                            if accessory["quantity"] >= transaction_item["quantity"]:
+                                accessory["quantity"] -= transaction_item["quantity"]
+                                found = True
+                                log_entry = {
+                                    "type": "Transaction",
+                                    "TransactionId": transaction_id,
+                                    "category": "Accessory",
+                                    "brand": transaction_item["brand"],
+                                    "model": transaction_item["model"],
+                                    "color": transaction_item["color"],
+                                    "quantity": transaction_item["quantity"],
+                                    "price": transaction_item.get("price", "N/A"),
+                                    "date": datetime.now().strftime("%Y-%m-%d")
+                                }
+                                data["logs"].append(log_entry)
+                                create_log_entry("Transaction", log_entry)
+                                break
+                            else:
+                                return JsonResponse({
+                                    "success": False,
+                                    "message": f"Not enough stock for {transaction_item['brand']} {transaction_item['model']}!"
+                                })
+
+                if not found:
+                    return JsonResponse({
+                        "success": False,
+                        "message": f"Item {transaction_item['brand']} {transaction_item['model']} not found in inventory."
+                    })
 
             with open(DATA_FILE, "w") as file:
                 json.dump(data, file, indent=4)
@@ -327,7 +384,7 @@ def process_transaction(request):
 
     elif request.method == "GET":
         user_role = request.session.get("role", "user")
-        return render(request, "transaction.html", context={"current_tab": "transction", "user_role": user_role})
+        return render(request, "transaction.html", context={"current_tab": "transaction", "user_role": user_role})
 
     return JsonResponse({"error": "Invalid request"}, status=400)
 

@@ -226,140 +226,177 @@ body {
 </div>
 
 <script>
-    document.addEventListener('DOMContentLoaded', function() {
-        // Monthly Sales Line Chart
-        const monthlySalesCtx = document.getElementById('monthlySalesChart').getContext('2d');
-        new Chart(monthlySalesCtx, {
-            type: 'line',
-            data: {
-                labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
-                datasets: [{
-                    label: 'Monthly Sales (PHP)',
-                    data: [50000, 65000, 45000, 55000, 68000, 72000],
-                    borderColor: 'rgba(39, 76, 119, 0.8)',
-                    backgroundColor: 'rgba(39, 76, 119, 0.2)',
-                    tension: 0.3
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: true,
-                layout: {
-                    padding: {
-                        left: 0,
-                        right: 0,
-                        top: 0,
-                        bottom: 0
-                    }
-                },
-                plugins: {
-                    legend: { display: false },
-                    padding: 0
-                },
-                scales: {
-                    y: {
-                        beginAtZero: true,
-                        padding: 0
-                    },
-                    x: {
-                        padding: 0
-                    }
-                }
+    document.addEventListener('DOMContentLoaded', function () {
+    fetch('/static/data.json') // Adjust the path if necessary
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Failed to fetch data.json');
             }
+            return response.json();
+        })
+        .then(data => {
+            // Process data for graphs
+            const monthlySalesData = getMonthlySalesData(data.logs);
+            const productDistributionData = getProductDistributionData(data.helmets);
+            const stockLevelsData = getStockLevelsData(data.helmets);
+
+            // Update graphs
+            updateMonthlySalesChart(monthlySalesData);
+            updateProductDistributionChart(productDistributionData);
+            updateStockLevelsChart(stockLevelsData);
+        })
+        .catch(error => {
+            console.error('Error fetching data for graphs:', error);
         });
-    
-        // Product Distribution Pie Chart
-        const productDistributionCtx = document.getElementById('productDistributionChart').getContext('2d');
-        new Chart(productDistributionCtx, {
-            type: 'pie',
-            data: {
-                labels: ['AXXIS','EVO', 'HNJ', 'SEC','SPYDER', 'Others'],
-                datasets: [{
-                    data: [15, 185, 88, 44, 25, 3],
-                    backgroundColor: [
-                        'rgba(39, 76, 119, 0.7)',   
-                        'rgba(113, 150, 179, 0.7)', 
-                        'rgba(217, 221, 228, 0.7)', 
-                        'rgba(22, 22, 22, 0.7)',   
-                        'rgba(190, 190, 190, 0.7)' 
-                    ]
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                layout: {
-                    padding: 0
-                },
-                plugins: {
-                    legend: {
-                        position: 'right',
-                        labels: {
-                            font: { size: 9 },
-                            padding: 2
-                        }
-                    }
-                }
+});
+
+// Helper function to process monthly sales data
+function getMonthlySalesData(logs) {
+    const monthlySales = {};
+
+    logs.forEach(log => {
+        if (log.type === 'Transaction') {
+            const date = new Date(log.date);
+            const month = date.toLocaleString('default', { month: 'short' });
+
+            if (!monthlySales[month]) {
+                monthlySales[month] = 0;
             }
-        });
-        
-        // Stock Levels Bar Chart
-        const stockLevelsCtx = document.getElementById('stockLevelsChart').getContext('2d');
-        new Chart(stockLevelsCtx, {
-            type: 'bar',
-            data: {
-                labels: ['AXXIS','EVO', 'HNJ', 'SEC','SPYDER', 'Others'],
-                datasets: [{
-                    label: 'Stock Levels',
-                    data: [15, 185, 88, 44, 25, 3],
-                    backgroundColor: 'rgba(113, 150, 179, 0.7)',
-                    borderColor: 'rgba(39, 76, 119, 1)',
-                    borderWidth: 1
-                }]
+            monthlySales[month] += log.quantity * log.price;
+        }
+    });
+
+    return Object.entries(monthlySales).map(([month, total]) => ({ month, total }));
+}
+
+// Helper function to process product distribution data
+function getProductDistributionData(helmets) {
+    const productDistribution = {};
+
+    helmets.forEach(helmet => {
+        if (!productDistribution[helmet.brand]) {
+            productDistribution[helmet.brand] = 0;
+        }
+        productDistribution[helmet.brand] += helmet.quantity;
+    });
+
+    return Object.entries(productDistribution).map(([brand, quantity]) => ({ brand, quantity }));
+}
+
+// Helper function to process stock levels data
+function getStockLevelsData(helmets) {
+    const stockLevels = {};
+
+    helmets.forEach(helmet => {
+        if (!stockLevels[helmet.brand]) {
+            stockLevels[helmet.brand] = 0;
+        }
+        stockLevels[helmet.brand] += helmet.quantity;
+    });
+
+    return Object.entries(stockLevels).map(([brand, quantity]) => ({ brand, quantity }));
+}
+
+// Function to update the Monthly Sales chart
+function updateMonthlySalesChart(data) {
+    const ctx = document.getElementById('monthlySalesChart').getContext('2d');
+    const labels = data.map(item => item.month);
+    const values = data.map(item => item.total);
+
+    new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: labels,
+            datasets: [{
+                label: 'Monthly Sales (PHP)',
+                data: values,
+                borderColor: 'rgba(39, 76, 119, 0.8)',
+                backgroundColor: 'rgba(39, 76, 119, 0.2)',
+                tension: 0.3
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: true,
+            plugins: {
+                legend: { display: false }
             },
-            options: {
-                responsive: true,
-                maintainAspectRatio: true,
-                layout: {
-                    padding: 0
-                },
-                scales: {
-                    y: {
-                        beginAtZero: true,
-                        padding: 0,
-                        title: {
-                            display: true,
-                            text: 'Quantity',
-                            padding: 0
-                        }
-                    },
-                    x: {
-                        padding: 0
-                    }
-                },
-                plugins: {
-                    legend: { display: false },
-                    padding: 0
-                }
+            scales: {
+                y: { beginAtZero: true },
+                x: { beginAtZero: true }
             }
-        });
-        
-        // Function to fetch product count
-    function fetchProductCount() {
-    console.log("Fetching product count...");
-    fetch('/api/total-stocks/')  // Changed endpoint
-    .then(response => response.json())
-    .then(data => {
-        document.getElementById('total-stocks').textContent = data.total_stocks;
+        }
     });
 }
-        
-        // Call the function when the page loads
-        fetchProductCount();
-        
-        // Optional: Refresh the count periodically
-        setInterval(fetchProductCount, 60000); // Updates every minute
+
+// Function to update the Product Distribution chart
+function updateProductDistributionChart(data) {
+    const ctx = document.getElementById('productDistributionChart').getContext('2d');
+    const labels = data.map(item => item.brand);
+    const values = data.map(item => item.quantity);
+
+    new Chart(ctx, {
+        type: 'pie',
+        data: {
+            labels: labels,
+            datasets: [{
+                data: values,
+                backgroundColor: [
+                    'rgba(39, 76, 119, 0.7)',
+                    'rgba(113, 150, 179, 0.7)',
+                    'rgba(217, 221, 228, 0.7)',
+                    'rgba(22, 22, 22, 0.7)',
+                    'rgba(190, 190, 190, 0.7)'
+                ]
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    position: 'right',
+                    labels: {
+                        font: { size: 9 },
+                        padding: 2
+                    }
+                }
+            }
+        }
     });
+}
+
+// Function to update the Stock Levels chart
+function updateStockLevelsChart(data) {
+    const ctx = document.getElementById('stockLevelsChart').getContext('2d');
+    const labels = data.map(item => item.brand);
+    const values = data.map(item => item.quantity);
+
+    new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: labels,
+            datasets: [{
+                label: 'Stock Levels',
+                data: values,
+                backgroundColor: 'rgba(113, 150, 179, 0.7)',
+                borderColor: 'rgba(39, 76, 119, 1)',
+                borderWidth: 1
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: true,
+            scales: {
+                y: { beginAtZero: true },
+                x: { beginAtZero: true }
+            },
+            plugins: {
+                legend: { display: false }
+            }
+        }
+    });
+}
 
     function fetchTopSellingBrand() {
     fetch('/static/data.json') // Adjust the path if necessary

@@ -41,9 +41,8 @@ button:hover {
     background-color: transparent !important;
 }
  
-  /* Make tables scrollable */
-  .table-container {
-    max-height: 55vh;  /* Set max height for scrolling */
+/* Only .table-container handles vertical scroll */
+.table-container {
     max-width: 90vw;
     overflow-y: auto;   /* Enable vertical scroll */
     overflow-x: auto;   /* Prevent horizontal cutoff */
@@ -51,6 +50,12 @@ button:hover {
     background: white; /* Ensure white background */
   }
   
+  /* Remove vertical scroll from .table-responsive, only allow horizontal */
+.table-responsive {
+    max-height: 55vh;
+    overflow-x: auto;
+    overflow-y: auto;
+}
 
     h1 {
         font-size: 2.5vw; /* Adjust based on screen width */
@@ -122,109 +127,153 @@ button:hover {
             </div>
         </div>
 
-    <div class="row" >
-<!-- Left Panel: Form -->
-<div class="col-lg-4 col-md-6 col-12">
-    <div class="card mb-4" style="border: none; border-radius: 8px;">
-        <div class="card-header" style="background-color: #274C77; color: white; border-radius: 8px 8px 0 0;">
-            <h5 class="card-title mb-0">Item Details</h5>
-        </div>
-        <div class="card-body">
-            <form id="transactionForm">
-                {% csrf_token %}
-                <div class="row g-3 mb-3">
-                    <div class="col-md-6">
-                        <label for="brand" class="form-label" style="color: #274C77; font-weight: 500;">Brand</label>
-                        <input type="text" id="brand" name="brand" class="form-control" required style="border-color: #8B8C89;">
-                    </div>
-                    <div class="col-md-6">
-                        <label for="model" class="form-label" style="color: #274C77; font-weight: 500;">Model</label>
-                        <input type="text" id="model" name="model" class="form-control" required style="border-color: #8B8C89;">
-                    </div>
-                </div>
-
-                <div class="row g-3 mb-3">
-                    <div class="col-md-6">
-                        <label for="size" class="form-label" style="color: #274C77; font-weight: 500;">Size</label>
-                        <input type="text" id="size" name="size" class="form-control" required style="border-color: #8B8C89;">
-                    </div>
-                    <div class="col-md-6">
-                        <label for="color" class="form-label" style="color: #274C77; font-weight: 500;">Color</label>
-                        <input type="text" id="color" name="color" class="form-control" required style="border-color: #8B8C89;">
-                    </div>
-                </div>
-
-                <div class="row g-3 mb-3">
-                    <div class="col-md-6">
-                        <label for="size" class="form-label" style="color: #274C77; font-weight: 500;">Helmet Type</label>
-                        <input type="text" id="helmet_type" name="helmet_type" class="form-control" required style="border-color: #8B8C89;">
-                    </div>
-                    <div class="col-md-6">
-                        <label for="color" class="form-label" style="color: #274C77; font-weight: 500;">Visor Type</label>
-                        <input type="text" id="visor_type" name="visor_type" class="form-control" required style="border-color: #8B8C89;">
-                    </div>
-                </div>
-
-                <div class="row g-3 mb-3">
-                    <div class="col-md-6">
-                        <label for="quantity" class="form-label" style="color: #274C77; font-weight: 500;">Quantity</label>
-                        <input type="number" id="quantity" name="quantity" class="form-control" value="0" min="0" required style="border-color: #8B8C89;">
-                    </div>
-                    <div class="col-md-6">
-                        <label for="price" class="form-label" style="color: #274C77; font-weight: 500;">Price</label>
-                        <input type="text" id="price" name="price" class="form-control" required style="border-color: #8B8C89;">
-                    </div>
-                </div>
-                <div class="row g-2 justify-content-center">
-                    <div class="col-12 col-md-6 text-center">
-                        <button type="button" class="btn mb-3 w-100" onclick="clearFields()" style="background-color: #274C77; color: white;">
-                            <i class="fas fa-eraser me-1"></i> Clear Fields
-                        </button>
-                    </div>
-                </div>
-                
-                
-                
-            </form>
-
-            <div class="row g-2">
-                <div class="col-6">
-                    <button type="button" class="btn w-100" onclick="addItem()" style="background-color: #274C77; color: white;">
-                        <i class="fas fa-plus me-1"></i> Add
-                    </button>
-                </div>
-                <div class="col-6">
-                    <button type="button" class="btn w-100" onclick="removeItem()" style="background-color: #274C77; color: white;">
-                        <i class="fas fa-minus me-1"></i> Remove
-                    </button>
-                </div>
+    <div class="row">
+    <!-- Left Panel: Form -->
+    <div class="col-lg-4 col-md-6 col-12">
+        <div class="card mb-4" style="border: none; border-radius: 8px;">
+            <div class="card-header" style="background-color: #274C77; color: white; border-radius: 8px 8px 0 0;">
+                <h5 class="card-title mb-0">Item Details</h5>
             </div>
+            <div class="card-body">
+                <form id="transactionForm">
+                    {% csrf_token %}
+                    <div class="row g-3 mb-3">
+                        <div class="col-md-6">
+                            <label for="brand" class="form-label" style="color: #274C77; font-weight: 500;">Brand</label>
+                            <input type="text" id="brand" name="brand" class="form-control" required style="border-color: #8B8C89;">
+                        </div>
+                        <div class="col-md-6">
+                            <label for="model" class="form-label" style="color: #274C77; font-weight: 500;">Model</label>
+                            <input type="text" id="model" name="model" class="form-control" required style="border-color: #8B8C89;">
+                        </div>
+                    </div>
 
-            <div class="row g-2 mt-2">
-                <div class="col-6">
-                    <button type="button" class="btn w-100" data-bs-toggle="modal" data-bs-target="#restockModal" style="background-color: #274C77; color: white;">
-                        <i class="fas fa-boxes me-1"></i> Restock
-                    </button>
-                </div>
-             <div class="col-6">
-                <button type="button" class="btn w-100" onclick="voidTransaction()" style="background-color: #274C77; color: white;">
-                    <i class="fas fa-ban me-1"></i> Void
-                </button>
-            </div>   
+                    <div class="row g-3 mb-3">
+                        <div class="col-md-6">
+                            <label for="size" class="form-label" style="color: #274C77; font-weight: 500;">Size</label>
+                            <input type="text" id="size" name="size" class="form-control" required style="border-color: #8B8C89;">
+                        </div>
+                        <div class="col-md-6">
+                            <label for="color" class="form-label" style="color: #274C77; font-weight: 500;">Color</label>
+                            <input type="text" id="color" name="color" class="form-control" required style="border-color: #8B8C89;">
+                        </div>
+                    </div>
 
+                    <div class="row g-3 mb-3">
+                        <div class="col-md-6">
+                            <label for="size" class="form-label" style="color: #274C77; font-weight: 500;">Helmet Type</label>
+                            <input type="text" id="helmet_type" name="helmet_type" class="form-control" required style="border-color: #8B8C89;">
+                        </div>
+                        <div class="col-md-6">
+                            <label for="color" class="form-label" style="color: #274C77; font-weight: 500;">Visor Type</label>
+                            <input type="text" id="visor_type" name="visor_type" class="form-control" required style="border-color: #8B8C89;">
+                        </div>
+                    </div>
 
-            </div>
-            <div class="row g-2 mt-2">
-                
-             <div class="col-12">
-                <button type="button" class="btn w-100" onclick="printInventory()" style="background-color: #274C77; color: white;">
-                    <i class="fas fa-print me-1"></i> Print Inventory
-                </button>
-                </div>   
-            </div>
-        </div>
+                    <div class="row g-3 mb-3">
+                        <div class="col-md-6">
+                            <label for="quantity" class="form-label" style="color: #274C77; font-weight: 500;">Quantity</label>
+                            <input type="number" id="quantity" name="quantity" class="form-control" value="0" min="0" required style="border-color: #8B8C89;">
+                        </div>
+                        <div class="col-md-6">
+                            <label for="price" class="form-label" style="color: #274C77; font-weight: 500;">Price</label>
+                            <input type="text" id="price" name="price" class="form-control" required style="border-color: #8B8C89;">
+                        </div>
+                    </div>
+                    </form>  
+                    <!-- Clear Fields & Void -->
+<div class="row g-2 mb-2">
+    <div class="col-6">
+        <button type="button" class="btn w-100" onclick="clearFields()" style="background-color: #274C77; color: white;">
+            <i class="fas fa-eraser me-1"></i> Clear Fields
+        </button>
+    </div>
+    <div class="col-6">
+        <button type="button" class="btn w-100" onclick="voidTransaction()" style="background-color: #274C77; color: white;">
+            <i class="fas fa-ban me-1"></i> Void
+        </button>
     </div>
 </div>
+
+<!-- Add & Remove -->
+<div class="row g-2 mb-2">
+    <div class="col-6">
+        <button type="button" class="btn w-100" onclick="addItem()" style="background-color: #274C77; color: white;">
+            <i class="fas fa-plus me-1"></i> Add
+        </button>
+    </div>
+    <div class="col-6">
+        <button type="button" class="btn w-100" onclick="removeItem()" style="background-color: #274C77; color: white;">
+            <i class="fas fa-minus me-1"></i> Remove
+        </button>
+    </div>
+</div>
+
+<!-- Restock & Print Inventory -->
+<div class="row g-2">
+    <div class="col-6">
+        <button type="button" class="btn w-100" data-bs-toggle="modal" data-bs-target="#restockModal" style="background-color: #274C77; color: white;">
+            <i class="fas fa-boxes me-1"></i> Restock
+        </button>
+    </div>
+    <div class="col-6">
+        <button type="button" class="btn w-100" onclick="printInventory()" style="background-color: #274C77; color: white;">
+            <i class="fas fa-print me-1"></i> Print Inventory
+        </button>
+    </div>
+</div>
+
+                    </div>   
+                </div>
+            </div>
+                 <!-- Right Panel: Tables -->
+                <div class="col-lg-8 col-md-6 col-12">
+                    <div class="card mb-4">
+                        <div class="card-header" style="background-color: #274C77; color: white; border-radius: 8px 8px 0 0;">
+                            <h5 class="card-title mb-0">Product Catalog</h5>
+                        </div>
+                        <div class="card-body p-0">
+                            <div class="table-responsive">
+                                <div class="product-table">
+                                    {% include "productTable.html" with table_id="productTable" %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card">
+                        <div class="card-header d-flex justify-content-between align-items-center" style="background-color: #274C77; color: white; border-radius: 8px 8px 0 0;">
+                            <h5 class="card-title mb-0">Current Transaction</h5>
+                        </div>
+                        <div class="card-body p-0" style="max-height: 300px; overflow-y: auto;">
+                            <table class="table table-hover mb-0" id="addedItemsTable">
+                                <thead>
+                                    <tr>
+                                        <th>Brand</th>
+                                        <th>Model</th>
+                                        <th>Size</th>
+                                        <th>Color</th>
+                                        <th>Helmet Type</th>
+                                        <th>Visor Type</th>
+                                        <th>Price</th>
+                                        <th>Quantity</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <!-- Items will be added here -->
+                                </tbody>
+                            </table>
+                        
+    </div>
+    <div class="card-footer d-flex justify-content-between">
+        <span class="fw-bold">Total Items: <span id="totalItems">0</span></span>
+        <span class="fw-bold">Total Amount: <span id="totalAmountDisplay">₱ 0.00</span></span>
+    </div>
+</div>
+</div>
+        </div>
+    </div>
+
+
 
 <!--  Restock Confirmation Modal -->
 <div class="modal fade" id="restockModal" tabindex="-1" aria-labelledby="restockModalLabel" aria-hidden="true">
@@ -244,55 +293,6 @@ button:hover {
         </div>
     </div>
 </div>
-
-
- <!-- Right Side: Tables -->
-<div class="col-lg-8 col-md-6 col-12">
-    
-     <!-- Products Table -->
-<div class="card mb-4" style="border: none; border-radius: 8px;">
-    <div class="card-header" style="background-color: #274C77; color: white; border-radius: 8px 8px 0 0;">
-        <h5 class="card-title mb-0">Product Catalog</h5>
-    </div>
-    <div class="card-body p-0">
-        <div class="table-responsive">
-            <div class="product-table" id="productTableContainer">
-                {% include "productTable.html" with table_id="productTable" %}
-            </div>
-        </div>
-    </div>
-</div>
-    
-    <!-- Added Items Table -->
-    <div class="card" style="border: none; border-radius: 8px;">
-        <div class="card-header d-flex justify-content-between align-items-center" style="background-color: #274C77; color: white; border-radius: 8px 8px 0 0;">
-            <h5 class="card-title mb-0">Current Transaction</h5>
-        </div>
-        <div class="card-body p-0" style="max-height: 300px; overflow-y: auto;">
-                <table class="table table-hover mb-0" id="addedItemsTable">
-                    <thead style="position: sticky; top: 0; background-color: #274C77; color: white;">
-                        <tr>
-                            <th>Brand</th>
-                            <th>Model</th>
-                            <th>Size</th>
-                            <th>Color</th>
-                            <th>Helmet Type</th>
-                            <th>Visor Type</th>
-                            <th>Price</th>
-                            <th>Quantity</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <!-- Items will be added here -->
-                    </tbody>
-                </table>
-            </div>
-            <div class="card-footer d-flex justify-content-between">
-                <span class="fw-bold">Total Items: <span id="totalItems">0</span></span>
-                <span class="fw-bold">Total Amount: <span id="totalAmountDisplay">₱ 0.00</span></span>
-            </div>
-    </div>
-
 
 
 <script>

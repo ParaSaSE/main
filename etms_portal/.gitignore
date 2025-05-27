@@ -23,3 +23,10 @@ venv/
 *.pyc
 *.pyo
 *.pyd
+
+# Ignore system & Git tool folders
+portable-git/
+*.exe
+*.dll
+*.bin
+*.log

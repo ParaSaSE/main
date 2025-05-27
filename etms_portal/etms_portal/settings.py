@@ -29,11 +29,7 @@ SECRET_KEY = 'django-insecure-m+kv_((^b**whzaip1_c^o#z#4ucwdp$l^*wg7l*@jq&mr@i@^
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = [
-    'elytratech.up.railway.app',  # Add your Railway domain here
-    'localhost',  # For local development
-    '127.0.0.1',  # For local development
-]
+ALLOWED_HOSTS = ['*']  # or better, ['yourproject.up.railway.app']
 
 
 # Application definition
@@ -136,6 +132,4 @@ STATIC_ROOT = BASE_DIR / 'staticfiles'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-CSRF_TRUSTED_ORIGINS = [
-    'https://elytratech.up.railway.app',  # Add your Railway domain here
-]
+ALLOWED_HOSTS = ['*']  # or better, ['yourproject.up.railway.app']

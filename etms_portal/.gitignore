@@ -30,3 +30,7 @@ portable-git/
 *.dll
 *.bin
 *.log
+
+portable-git/
+node_modules/
+venv/

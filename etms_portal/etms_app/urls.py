@@ -15,7 +15,7 @@ Including another URLconf
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
 from django.contrib import admin
-from django.urls import path
+from django.urls import path, include
 from .views import *
 from .views import restock
 from . import views
@@ -51,6 +51,7 @@ urlpatterns = [
     path('api/helmets-sold-today/', views.get_helmets_sold_today, name='helmets_sold_today'),
     path('get_logs/', views.get_logs, name='get_logs'),
     path('api/low-stock-alerts/', views.low_stock_alerts, name='low_stock_alerts'),
+    path('admin/', admin.site.urls),  # This enables the admin panel at /admin/
 ]
 
 

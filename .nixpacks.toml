@@ -1,0 +1,5 @@
+[phases.setup]
+nixPkgs = ["<any packages you need>"]
+
+[build]
+ignore = ["portable-git/**"]
